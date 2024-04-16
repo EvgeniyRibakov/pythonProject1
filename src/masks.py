@@ -1,6 +1,3 @@
-import tests
-
-
 def mask_cards(masked_card: str) -> str:
     '''Принимает номер карты и возвращает изменённый зашифрованный номер
     и считывает номер счета в банке и возвращает зашифрованный
@@ -20,4 +17,4 @@ def mask_cards(masked_card: str) -> str:
 
 def mask_bills(masked_bill: str) -> str:
     return "**" + masked_bill[-4:]
-
+    
