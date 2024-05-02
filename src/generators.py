@@ -1,4 +1,4 @@
-from typing import Dict, Generator, Iterator, List
+from typing import Dict, Generator, List
 
 transactions = [
     {
@@ -49,31 +49,23 @@ transactions = [
 ]
 
 
-def filter_by_currency(transactions: List[Dict[str, str]], currency: str) -> Iterator[Dict[str, str]]:
-    """
-    Эта функция принимает список словарей transactions и валюту currency, проходит по каждой транзакции в списке
-    и проверяет, соответствует ли валюта транзакции указанной валюте
-    """
+def filter_by_currency(
+    transactions: List[Dict[str, Dict[str, Dict[str, str]]]], currency: str
+) -> Generator[Dict[str, Dict[str, Dict[str, str]]], None, None]:
+    """Фильтрует транзакции по валюте"""
+
     for transaction in transactions:
-        if transaction.get("currency") == currency:
+        if transaction.get("operationAmount", {}).get("currency", {}).get("code") == currency:
             yield transaction
 
 
-def transaction_descriptions(transactions: List[Dict[str, str]]) -> Iterator[str]:
-    """
-    Этот генератор проходит через каждую транзакцию в списке transactions
-    и возвращает описание каждой операции
-    """
+def transaction_descriptions(transactions: List[Dict[str, str]]) -> Generator[str, None, None]:
+    """Генерирует описания транзакций"""
     for transaction in transactions:
         yield transaction.get("description", "No description available")
 
 
 def card_number_generator(start: int, end: int) -> Generator[str, None, None]:
-    """
-    Этот код определяет функцию card_number_generator,
-    которая принимает начальное и конечное значения диапазона итерации,
-    использует цикл for для генерации номеров карт в заданном диапазоне и возвращает их через yield
-    """
+    """Генерирует номера карт"""
     for i in range(start, end + 1):
-        padded_number = "{:016d}".format(i)
-        yield "{} {} {} {}".format(padded_number[:4], padded_number[4:8], padded_number[8:12], padded_number[12:])
+        yield f"0000 0000 0000 {i:04d}"
