@@ -12,7 +12,7 @@ def log(filename: Optional[str] = None) -> Callable[[Callable], Callable]:
         @functools.wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
             """
-            Обертка вокруг функции для логирования её вызовов
+            Обертка вокруг функции для логирования её вызовов.
             """
             timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             func_args = ", ".join(map(repr, args))
