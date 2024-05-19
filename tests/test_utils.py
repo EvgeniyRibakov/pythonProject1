@@ -1,44 +1,37 @@
 import unittest
+from typing import Any, List, Dict
 from unittest.mock import mock_open, patch
+
 from src.utils import convert_currency, get_currency_rate, read_json_file
-from typing import Any
 
 
-class TestYourModule(unittest.TestCase):
+class TestReadJsonFile(unittest.TestCase):
+
+    @patch("builtins.open", new_callable=mock_open, read_data="[]")
+    def test_read_empty_json(self, mock_file: Any) -> None:
+        data = read_json_file("dummy/path")
+        self.assertEqual(data, [])
+
+    @patch("builtins.open", new_callable=mock_open, read_data='{"key": "value"}')
+    def test_read_non_list_json(self, mock_file: Any) -> None:
+        data = read_json_file("dummy/path")
+        self.assertEqual(data, [])
+
+    @patch("builtins.open", side_effect=FileNotFoundError)
+    def test_read_nonexistent_file(self, mock_open: Any) -> None:
+        data = read_json_file("nonexistent/path")
+        self.assertEqual(data, [])
 
     @patch(
         "builtins.open",
         new_callable=mock_open,
-        read_data='[{"amount": 100, "currency": "USD"}, {"amount": 50, "currency": "EUR"}]',
+        read_data='[{"id": 441945886, "state": "EXECUTED", "date": "2019-08-26T10:50:58.294041", "operationAmount": {'
+                  '"amount": "31957.58", "currency": {"name": "руб.", "code": "RUB"}}}]',
     )
-    def test_read_json_file_success(self, mock_file: Any) -> None:
-        file_path = "test.json"
-        currency = "RUB"
-        result = read_json_file(file_path, currency)
-        mock_file.assert_called_once_with("test.json", "r", encoding="utf-8")
-        self.assertIsInstance(result, list)
-        self.assertEqual(len(result), 0)
-
-    @patch("builtins.open", new_callable=mock_open, read_data="{}")
-    def test_read_json_file_empty(self, mock_file: Any) -> None:
-        file_path = "test.json"
-        currency = "RUB"
-        result = read_json_file(file_path, currency)
-        self.assertEqual(result, [])
-
-    @patch("builtins.open", side_effect=FileNotFoundError)
-    def test_read_json_file_not_found(self, mock_file: Any) -> None:
-        file_path = "non_existent_file.json"
-        currency = "RUB"
-        result = read_json_file(file_path, currency)
-        self.assertEqual(result, [])
-
-    @patch("builtins.open", new_callable=mock_open, read_data="invalid json")
-    def test_read_json_file_invalid_json(self, mock_file: Any) -> None:
-        file_path = "test.json"
-        currency = "RUB"
-        result = read_json_file(file_path, currency)
-        self.assertEqual(result, [])
+    def test_read_valid_json(self, mock_file: Any) -> None:
+        expected_data: List[Dict[str, str]] = []
+        data = read_json_file("dummy/path")
+        self.assertEqual(data, expected_data)
 
     @patch("requests.get")
     def test_get_currency_rate_success(self, mock_get: Any) -> None:
