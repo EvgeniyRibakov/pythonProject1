@@ -1,7 +1,7 @@
 import json
 import os
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Dict, List
 
 import requests
 from dotenv import load_dotenv
@@ -33,36 +33,32 @@ def read_json_file(file_path: str) -> List[Dict]:
     return data
 
 
-# --- Функция get_currency_rate для получения курса валют ---
-def get_currency_rate(currency_code: str, api_key: str) -> Optional[float]:
-    """
-    Получает курс валюты по коду валюты используя API сайта apilayer.
-    """
-    url = f"https://api.apilayer.com/exchangerates_data/latest?base=USD&symbols={currency_code}"
-    headers = {"apikey": api_key}
-    response = requests.get(url, headers=headers)
+def convert_currency(amount: float, from_currency: str) -> float:
+    """Конвертирует указанную сумму из одной валюты в рубли"""
+    if from_currency == "RUB":
+        return amount  # Если валюта уже в рублях, возвращаем сумму без конвертации
 
+    # Определяем URL для запроса к API
+    url = f"https://api.exchangeratesapi.io/latest?base={from_currency}&symbols=RUB"
+
+    # Отправляем запрос к API
+    response = requests.get(url)
+
+    # Проверяем успешность запроса
     if response.status_code == 200:
-        rates = response.json().get("rates", {})
-        rate = rates.get(currency_code)
-        if rate is not None:
-            return float(rate)
-    return None
+        data = response.json()
+        exchange_rate = data["rates"]["RUB"]
+        return float(amount * exchange_rate)
+    else:
+        raise ValueError(f"Failed to fetch exchange rates: {response.status_code}")
 
 
-def convert_currency(transaction: Dict[str, Any], api_key: str) -> Optional[float]:
-    """
-    Конвертирует сумму транзакции из исходной валюты в рубли.
-    """
-    amount = transaction.get("amount")
-    if amount is None:
-        return None
+def transaction_amount_in_rub(transaction: dict) -> float:
+    """Конвертирует сумму транзакции в рубли"""
+    amount = float(transaction.get("operationAmount", {}).get("amount", 0))
+    currency = transaction.get("operationAmount", {}).get("currency", {}).get("code")
 
-    currency = transaction.get("currency")
-    if currency == "RUB":
-        return float(amount)
-    elif currency in ["USD", "EUR"]:
-        rate = get_currency_rate(currency, api_key)
-        if rate is not None:
-            return float(round(amount * rate * get_currency_rate("RUB", api_key), 2))
-    return None
+    if amount == 0 or currency is None:
+        raise ValueError("Transaction data is incomplete")
+
+    return convert_currency(amount, currency)
