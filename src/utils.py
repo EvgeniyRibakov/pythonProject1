@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 from pathlib import Path
 from typing import Dict, List
@@ -62,3 +63,19 @@ def transaction_amount_in_rub(transaction: dict) -> float:
         raise ValueError("Transaction data is incomplete")
 
     return convert_currency(amount, currency)
+
+
+# Создание отдельного объекта логгера для модуля utils
+utils_logger = logging.getLogger('utils')
+utils_logger.setLevel(logging.DEBUG)
+
+# Настройка file_handler для логгера модуля utils
+utils_file_handler = logging.FileHandler('utils.log', mode='w')
+utils_file_handler.setLevel(logging.DEBUG)
+
+# Настройка форматтера для логгера модуля utils
+utils_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+utils_file_handler.setFormatter(utils_formatter)
+
+# Добавление обработчика файлов к логгеру модуля utils
+utils_logger.addHandler(utils_file_handler)
