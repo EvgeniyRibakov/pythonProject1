@@ -41,3 +41,20 @@ external_api_file_handler.setFormatter(external_api_formatter)
 
 # Добавление обработчика файлов к логгеру модуля external_api
 external_api_logger.addHandler(external_api_file_handler)
+
+
+def successful_function_utils() -> None:
+    """
+    Записывает сообщение в лог, указывая на успешное выполнение функции модуля masks.
+    """
+    masks_logger.info('Успешное выполнение функции модуля masks')
+
+
+def error_function_utils() -> None:
+    """
+    Функция модуля masks с логированием ошибочного случая использования
+    """
+    try:
+        result = 10 / 0
+    except Exception as e:
+        masks_logger.error('Ошибка')

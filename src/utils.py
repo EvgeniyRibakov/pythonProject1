@@ -67,11 +67,11 @@ def transaction_amount_in_rub(transaction: dict) -> float:
 
 # Создание отдельного объекта логгера для модуля utils
 utils_logger = logging.getLogger('utils')
-utils_logger.setLevel(logging.DEBUG)
+utils_logger.setLevel(logging.INFO)  # Установка уровня логирования на INFO
 
 # Настройка file_handler для логгера модуля utils
 utils_file_handler = logging.FileHandler('utils.log', mode='w')
-utils_file_handler.setLevel(logging.DEBUG)
+utils_file_handler.setLevel(logging.INFO)  # Установка уровня логирования обработчика на INFO
 
 # Настройка форматтера для логгера модуля utils
 utils_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -79,3 +79,21 @@ utils_file_handler.setFormatter(utils_formatter)
 
 # Добавление обработчика файлов к логгеру модуля utils
 utils_logger.addHandler(utils_file_handler)
+
+
+# Функция модуля utils с логированием успешного случая использования
+def successful_function_utils() -> None:
+    """
+    Записывает сообщение в лог, указывая на успешное выполнение функции модуля utils.
+    """
+    utils_logger.info('Успешное выполнение функции модуля utils')
+
+
+def error_function_utils() -> None:
+    """
+    Функция модуля utils с логированием ошибочного случая использования
+    """
+    try:
+        result = 10 / 0
+    except Exception as e:
+        utils_logger.error('Ошибка')
