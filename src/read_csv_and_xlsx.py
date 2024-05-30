@@ -1,35 +1,26 @@
 import pandas as pd
-from typing import Optional
-
-from pandas import DataFrame
 
 
-def reading_csv_file(file_path: str) -> Optional[DataFrame]:
-    """Читает файл с операциями .csv и возвращает DataFrame."""
+# Функция для считывания данных из CSV файла и преобразования их в список словарей
+def read_csv_data(file_path: str) -> list:
     try:
-        df = pd.read_csv(file_path, delimiter=';')
-        return df
+        data_frame = pd.read_csv(file_path)
+        return data_frame.to_dict("records")
     except FileNotFoundError:
-        print(f"Файл не найден: {file_path}")
-        return None
-    except pd.errors.EmptyDataError:
-        print(f"Файл пуст: {file_path}")
-        return None
-    except Exception as e:
-        print(f"Ошибка при чтении файла: {e}")
-        return None
+        print("Файл не найден.")
+        return []
 
 
-def reading_xlsx_file(file_path: str) -> Optional[DataFrame]:
-    """
-    Читает операции из xlsx-файла и обрабатывает исключения.
-    """
+# Функция для считывания данных из XLSX файла и преобразования их в список словарей
+def read_xlsx_data(file_path: str) -> list:
     try:
-        df = pd.read_excel('C:/Users/Acer/PycharmProjects/pythonProject1/transactions_excel.xlsx', engine='openpyxl')
-        return df
+        data_frame = pd.read_excel(file_path)
+        return data_frame.to_dict("records")
     except FileNotFoundError:
-        print(f"Файл не найден: {'C:/Users/Acer/PycharmProjects/pythonProject1/transactions_excel.xlsx'}")
-        return None
-    except Exception as e:
-        print(f"Ошибка при чтении файла: {e}")
-        return None
+        print("Файл не найден.")
+        return []
+
+
+# Пример использования функций
+print(read_csv_data("../data/transactions.csv"))
+print(read_xlsx_data("../data/transactions_excel.xlsx"))
