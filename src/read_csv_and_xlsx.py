@@ -21,6 +21,4 @@ def read_xlsx_data(file_path: str) -> list:
         return []
 
 
-# Пример использования функций
-print(read_csv_data("../data/transactions.csv"))
-print(read_xlsx_data("../data/transactions_excel.xlsx"))
+
