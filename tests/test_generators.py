@@ -10,7 +10,8 @@ def test_filter_by_currency_with_matching_currency() -> None:
         {"operationAmount": {"currency": {"code": "USD"}}},
     ]
     currency = "USD"
-    filtered_transactions = list(filter_by_currency(transactions, currency))
+    file_type = "json"
+    filtered_transactions = list(filter_by_currency(transactions, currency, file_type))
     assert filtered_transactions == [
         {"operationAmount": {"currency": {"code": "USD"}}},
         {"operationAmount": {"currency": {"code": "USD"}}},
@@ -25,7 +26,8 @@ def test_filter_by_currency_with_non_matching_currency() -> None:
         {"operationAmount": {"currency": {"code": "USD"}}},
     ]
     currency = "GBP"
-    filtered_transactions = list(filter_by_currency(transactions, currency))
+    file_type = "json"
+    filtered_transactions = list(filter_by_currency(transactions, currency, file_type))
     assert filtered_transactions == []
 
 

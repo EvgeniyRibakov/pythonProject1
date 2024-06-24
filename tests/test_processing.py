@@ -32,7 +32,7 @@ def test_sorted_dates(sample_data: List[Dict[str, Any]]) -> None:
         {"id": 159758235, "state": "EXECUTED", "date": "2016-07-14t07:08:04.258796"},
     ]
     # Сортировка данных и проверка соответствия ожидаемому результату
-    result = sorted_dates(sample_data, reverse=True)
+    result = sorted_dates(sample_data)
     assert result == expected_sorted_data
 
     # Обратная сортировка данных и проверка соответствия ожидаемому результату

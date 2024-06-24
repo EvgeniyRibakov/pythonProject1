@@ -1,8 +1,7 @@
 import json
 import logging
 import os
-from pathlib import Path
-from typing import Dict, List
+from typing import Any, Dict, List
 
 import requests
 from dotenv import load_dotenv
@@ -26,30 +25,25 @@ utils_file_handler.setFormatter(utils_formatter)
 # Добавляем обработчик к логгеру
 utils_logger.addHandler(utils_file_handler)
 
+logger = logging.getLogger(__name__)
 
-def read_json_file(file_path: str) -> List[Dict]:
-    """
-    Читает JSON файл и возвращает данные в виде списка словарей.
-    Если файл пустой, содержит не список или не найден, возвращает пустой список.
-    """
-    utils_logger.debug(f"Чтение JSON файла: {file_path}")  # Логгирование начала операции
-    if not Path(file_path).is_file():
-        utils_logger.error(f"Файл не найден: {file_path}")  # Логгирование ошибки
-        return []
 
+def read_json_file(file_path: str) -> List[Dict[str, Any]]:
     try:
         with open(file_path, "r", encoding="utf-8") as file:
+            logger.debug(f"Чтение JSON файла: {file_path}")
             data = json.load(file)
+            if isinstance(data, list):
+                return data
+            else:
+                logger.error(f"Неверный формат данных: ожидается список, получен {type(data)}")
+                return []
+    except FileNotFoundError:
+        logger.error(f"Файл не найден: {file_path}")
+        return []
     except json.JSONDecodeError:
-        utils_logger.error(f"Файл пустой или содержит не список: {file_path}")  # Логгирование ошибки
+        logger.error(f"Ошибка декодирования JSON файла: {file_path}")
         return []
-
-    if not isinstance(data, list):
-        utils_logger.warning(f"Файл не содержит списка: {file_path}")  # Логгирование предупреждения
-        return []
-
-    utils_logger.debug(f"JSON файл успешно прочитан: {file_path}")  # Логгирование успешного завершения
-    return data
 
 
 def convert_currency(amount: float, from_currency: str) -> float:

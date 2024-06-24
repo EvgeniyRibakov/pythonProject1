@@ -1,53 +1,156 @@
-import json
-import csv
-import pandas as pd
+import os
+import re
+from typing import Any, Dict, List
+
+from src.generators import filter_by_currency, transaction_descriptions
+from src.processing import sorted_dates
 from src.read_csv_and_xlsx import read_csv_data, read_xlsx_data
-from src.utils import read_json_file, transaction_amount_in_rub, convert_currency
-from src.masks import mask_bills, mask_cards
-from src.processing import get_key_state, sorted_dates
+from src.utils import read_json_file
+from src.widget import convert_date_string, mask_checcking
 
-# Функция для фильтрации транзакций по статусу
-def filter_transactions_by_status(transactions, status):
-    # Фильтрация транзакций с проверкой наличия ключа 'state'
-    if transactions is None:
-        return []  # Возвращаем пустой список, если transactions равно None
-    return [transaction for transaction in transactions if
-            'state' in transaction and transaction['state'] == status.upper()]
 
-# Основная функция программы
-def main():
-    print('Привет! Добро пожаловать в программу работы с банковскими транзакциями.')
-    print('Выберите необходимый пункт меню:')
-    print('1. Получить информацию о транзакциях из json файла')
-    print('2. Получить информацию о транзакциях из csv файла')
-    print('3. Получить информацию о транзакциях из xlsx файла')
+def filter_by_having_str(transactions: List[Dict[str, Any]], search_string: str) -> List[Dict[str, Any]]:
+    """Фильтрация списка словарей, проверяя наличие строки поиска в описании"""
+    return [
+        transaction
+        for transaction in transactions
+        if "description" in transaction and re.search(search_string, transaction["description"])
+    ]
 
-    choice = input('Введите номер пункта меню: ')
-    transactions = None
 
-    if choice == '1':
-        file_path = '../data/operations.json'
-        transactions = read_json_file(file_path)
+def summary_amount(transaction: dict) -> float:
+    """Суммирует суммы всех транзакций"""
+    total = 0.0
+    currency = transaction.get("operationAmount", {}).get("currency", {}).get("code")
+    amount = float(transaction.get("operationAmount", {}).get("amount", 0.0))
 
-    elif choice == '2':
-        file_path = '../data/transactions.csv'
-        transactions = read_csv_data(file_path)
+    if currency == "RUB":
+        total += amount
+    elif currency == "EUR":
+        total += amount * 94
+    elif currency == "USD":
+        total += amount * 88
 
-    elif choice == '3':
-        file_path = '../data/transactions_excel.xlsx'
-        transactions = read_xlsx_data(file_path)
+    return total
 
-    if transactions is not None:
-        valid_statuses = ['EXECUTED', 'CANCELED', 'PENDING']
-        print('Введите статус по которому необходимо выполнить фильтрацию.')
-        print('Доступные для фильтровки статусы: EXECUTED, CANCELED, PENDING')
-        status = input().upper()
-        filtered_transactions = filter_transactions_by_status(transactions, status)
-        print(f'Операции отфильтрованы по статусу "{status}"')
-        print(transactions)
+
+def return_type_of_file() -> tuple[List[Dict], str]:
+    """Запрашивает у пользователя формат файла и возвращает данные транзакций и тип файла"""
+    print("Привет! Добро пожаловать в программу работы с банковскими транзакциями.")
+    print("Выберите необходимый пункт меню:")
+    print("1. Получить информацию о транзакциях из json файла")
+    print("2. Получить информацию о транзакциях из csv файла")
+    print("3. Получить информацию о транзакциях из xlsx файла")
+    choice = input("Введите номер пункта меню: ")
+
+    base_path = os.path.join(os.path.dirname(__file__), "..", "data")
+
+    if choice == "1":
+        file_path = os.path.join(base_path, "operations.json")
+        return read_json_file(file_path), "json"
+    elif choice == "2":
+        file_path = os.path.join(base_path, "transactions.csv")
+        return read_csv_data(file_path), "csv"
+    elif choice == "3":
+        file_path = os.path.join(base_path, "transactions_excel.xlsx")
+        return read_xlsx_data(file_path), "excel"
     else:
-        print('Не удалось загрузить транзакции.')
+        print("Статус операции недоступен")
+        return return_type_of_file()
 
-# Точка входа в программу
-if __name__ == '__main__':
+
+def sort_transactions_by_status(data: List[Dict]) -> List[Dict]:
+    """Фильтрует список транзакций по заданному статусу"""
+    print("Выберите статус, по которому необходимо выполнить фильтрацию.")
+    status = input("Доступные для сортировки статусы: EXECUTED, CANCELED, PENDING\n").upper()
+
+    if status not in ("EXECUTED", "CANCELED", "PENDING"):
+        print("Некорректный статус, повторите ввод.")
+        return sort_transactions_by_status(data)
+
+    filtered_data = [transaction for transaction in data if transaction.get("state") == status]
+    print(f"Транзакции после фильтрации по статусу ({status}): {len(filtered_data)} найдено")
+    return filtered_data
+
+
+def filter_by_date_and_currency(data: List[Dict], file_type: str) -> List[Dict[Any, Any]]:
+    """Фильтрует и сортирует транзакции по дате и по валюте"""
+    to_sort = input("Фильтровать операции по дате?\n")
+    if to_sort.lower() == "да":
+        time = input("По возрастанию или по убыванию?\n")
+        if time.lower() == "по возрастанию":
+            data = sorted_dates(data)
+        elif time.lower() == "по убыванию":
+            data = sorted_dates(data, "decreasing")
+        else:
+            print("Некорректное значение, повторите ввод.")
+            return filter_by_date_and_currency(data, file_type)
+    elif to_sort.lower() == "нет":
+        pass
+    else:
+        print("Некорректный ответ, повторите ввод.")
+        return filter_by_date_and_currency(data, file_type)
+
+    to_sort = input("Выводить только рублевые транзакции?\n")
+    if to_sort.lower() == "да":
+        filtered_data = filter_by_currency(data, "RUB", file_type)
+        return filtered_data
+    elif to_sort.lower() == "нет":
+        return data
+    else:
+        print("Некорректный ответ, повторите ввод.")
+        return filter_by_date_and_currency(data, file_type)
+
+
+def sort_by_keyword(data: List[Dict]) -> List[Dict]:
+    """Фильтрует список транзакций по ключевому слову"""
+    to_sort = input("Отсортировать список операций по определённому слову в описании?\n")
+    if to_sort.lower() == "да":
+        to_find = input("Введите?\n")
+        return filter_by_having_str(data, to_find)
+    elif to_sort.lower() == "нет":
+        return data
+    else:
+        print("Некорректный ввод, повторитe")
+        return sort_by_keyword(data)
+
+
+def output_operations(data: List[Dict]) -> None:
+    """Печатает измененный список операций"""
+    print("Распечатываю итоговый список транзакций...")
+    if data and len(data) != 0:
+        print(f"\nВсего банковских операций в выборке: {len(data)}\n")
+        for operation in data:
+            print(
+                convert_date_string(operation["date"]),
+                next(transaction_descriptions(data)),
+            )
+            if re.search("Перевод", operation["description"]):
+                print(mask_checcking(operation["from"]), " -> ", mask_checcking(operation["to"]))
+            else:
+                print(mask_checcking(operation["to"]))
+
+            # Проверка и вывод суммы транзакции
+            try:
+                amount = operation.get("amount", 0.0)
+                currency = operation.get("currency_code", "N/A")
+                print(f"Сумма: {amount} {currency}")
+            except Exception as e:
+                print(f"Ошибка при обработке суммы: {e}")
+    else:
+        print("Не найдено подходящих транзакций под ваши условия фильтрации")
+
+
+def main() -> None:
+    """Соединяющая все функции функция"""
+    data, file_type = return_type_of_file()
+    print(f"Загружено {len(data)} транзакций из файла {file_type}")
+
+    data = sort_transactions_by_status(data)
+    data = filter_by_date_and_currency(data, file_type)
+    data = sort_by_keyword(data)
+    output_operations(data)
+
+
+if __name__ == "__main__":
     main()
