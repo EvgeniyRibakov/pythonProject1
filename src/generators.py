@@ -50,24 +50,31 @@ transactions = [
 
 
 def filter_by_currency(data: List[Dict], currency_code: str, file_type: str) -> List[Dict]:
-    """Фильтрует транзакции по коду валюты"""
+    """Filters transactions by currency code."""
+    # Check if the file type is JSON
     if file_type == "json":
+        # Return transactions where currency code matches
         return [
             transaction
             for transaction in data
             if transaction.get("operationAmount", {}).get("currency", {}).get("code") == currency_code
         ]
     else:
+        # Return transactions where currency code matches for other file types
         return [transaction for transaction in data if transaction.get("currency_code") == currency_code]
 
 
 def transaction_descriptions(data: List[Dict]) -> Generator[str, None, None]:
-    """Генератор описаний транзакций"""
+    """Generator that yields transaction descriptions."""
+    # Loop through each transaction in data
     for transaction in data:
+        # Yield the description of the transaction or an empty string
         yield transaction.get("description", "")
 
 
 def card_number_generator(start: int, end: int) -> Generator[str, None, None]:
-    """Генерирует номера карт"""
+    """Generates card numbers from start to end."""
+    # Loop from start to end
     for i in range(start, end + 1):
+        # Yield formatted card number
         yield f"0000 0000 0000 {i:04d}"

@@ -2,7 +2,15 @@ from src.masks import mask_bills, mask_cards
 
 
 def convert_date_string(date_string: str) -> str:
-    """Конвертирует строку даты из формата ISO 8601 в формат "дд.мм.гггг"""
+    """
+    Convert a date string from ISO 8601 format to "dd.mm.yyyy" format.
+
+    Args:
+        date_string (str): A date in ISO 8601 format (e.g., "2023-10-17T15:23:45").
+
+    Returns:
+        str: The converted date in "dd.mm.yyyy" format or "Invalid date format" if the input is not valid.
+    """
     try:
         date_parts = date_string.split("T")[0].split("-")
         if len(date_parts) == 3:
@@ -14,7 +22,16 @@ def convert_date_string(date_string: str) -> str:
 
 
 def mask_checcking(user_input: str) -> str:
-    """Принимает карту/счет и номер и возвращает маску в зависимости от типа"""
+    """
+    Mask a card or account number based on its type.
+
+    Args:
+        user_input (str): The input string containing a card or account number.
+
+    Returns:
+        str: A masked string for a card or account, or the original input if it is not valid.
+    """
+
     a = user_input.split(" ")
     if len(a) > 1:
         if a[0] == "Maestro" or a[0] == "MasterCard" or a[0] == "Visa":

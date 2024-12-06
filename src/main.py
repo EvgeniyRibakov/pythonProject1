@@ -10,7 +10,16 @@ from src.widget import convert_date_string, mask_checcking
 
 
 def filter_by_having_str(transactions: List[Dict[str, Any]], search_string: str) -> List[Dict[str, Any]]:
-    """Фильтрация списка словарей, проверяя наличие строки поиска в описании"""
+    """
+    Find transactions with a word in the description.
+
+    Args:
+        transactions (List[Dict[str, Any]]): List of transactions.
+        search_string (str): The word to find in the description.
+
+    Returns:
+        List[Dict[str, Any]]: Transactions that have the word.
+    """
     return [
         transaction
         for transaction in transactions
@@ -19,7 +28,16 @@ def filter_by_having_str(transactions: List[Dict[str, Any]], search_string: str)
 
 
 def summary_amount(transaction: dict) -> float:
-    """Суммирует суммы всех транзакций"""
+    """
+    Calculate the total amount in RUB.
+
+    Args:
+        transaction (dict): A transaction with currency and amount.
+
+    Returns:
+        float: Total in RUB. Converts EUR and USD to RUB.
+    """
+
     total = 0.0
     currency = transaction.get("operationAmount", {}).get("currency", {}).get("code")
     amount = float(transaction.get("operationAmount", {}).get("amount", 0.0))
@@ -35,7 +53,13 @@ def summary_amount(transaction: dict) -> float:
 
 
 def return_type_of_file() -> tuple[List[Dict], str]:
-    """Запрашивает у пользователя формат файла и возвращает данные транзакций и тип файла"""
+    """
+    Ask the user to choose a file type and return data.
+
+    Returns:
+        tuple[List[Dict], str]: A list of transactions and file type.
+    """
+
     print("Привет! Добро пожаловать в программу работы с банковскими транзакциями.")
     print("Выберите необходимый пункт меню:")
     print("1. Получить информацию о транзакциях из json файла")
@@ -60,7 +84,16 @@ def return_type_of_file() -> tuple[List[Dict], str]:
 
 
 def sort_transactions_by_status(data: List[Dict]) -> List[Dict]:
-    """Фильтрует список транзакций по заданному статусу"""
+    """
+    Filter transactions by status like EXECUTED, CANCELED.
+
+    Args:
+        data (List[Dict]): Transactions data.
+
+    Returns:
+        List[Dict]: Transactions with the chosen status.
+    """
+
     print("Выберите статус, по которому необходимо выполнить фильтрацию.")
     status = input("Доступные для сортировки статусы: EXECUTED, CANCELED, PENDING\n").upper()
 
@@ -74,7 +107,17 @@ def sort_transactions_by_status(data: List[Dict]) -> List[Dict]:
 
 
 def filter_by_date_and_currency(data: List[Dict], file_type: str) -> List[Dict[Any, Any]]:
-    """Фильтрует и сортирует транзакции по дате и по валюте"""
+    """
+    Filter transactions by date and currency.
+
+    Args:
+        data (List[Dict]): Transactions data.
+        file_type (str): File type (e.g., json, csv, excel).
+
+    Returns:
+        List[Dict]: Filtered transactions.
+    """
+
     to_sort = input("Фильтровать операции по дате?\n")
     if to_sort.lower() == "да":
         time = input("По возрастанию или по убыванию?\n")
@@ -103,7 +146,16 @@ def filter_by_date_and_currency(data: List[Dict], file_type: str) -> List[Dict[A
 
 
 def sort_by_keyword(data: List[Dict]) -> List[Dict]:
-    """Фильтрует список транзакций по ключевому слову"""
+    """
+    Find transactions with a key word.
+
+    Args:
+        data (List[Dict]): Transactions data.
+
+    Returns:
+        List[Dict]: Transactions with the word in the description.
+    """
+
     to_sort = input("Отсортировать список операций по определённому слову в описании?\n")
     if to_sort.lower() == "да":
         to_find = input("Введите?\n")
@@ -116,7 +168,13 @@ def sort_by_keyword(data: List[Dict]) -> List[Dict]:
 
 
 def output_operations(data: List[Dict]) -> None:
-    """Печатает измененный список операций"""
+    """
+    Print all transactions after filtering.
+
+    Args:
+        data (List[Dict]): Transactions data.
+    """
+
     print("Распечатываю итоговый список транзакций...")
     if data and len(data) != 0:
         print(f"\nВсего банковских операций в выборке: {len(data)}\n")
@@ -142,7 +200,9 @@ def output_operations(data: List[Dict]) -> None:
 
 
 def main() -> None:
-    """Соединяющая все функции функция"""
+    """
+    The main function to run the program. It loads data, filters transactions, and prints them.
+    """
     data, file_type = return_type_of_file()
     print(f"Загружено {len(data)} транзакций из файла {file_type}")
 

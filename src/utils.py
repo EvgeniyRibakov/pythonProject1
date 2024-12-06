@@ -29,6 +29,16 @@ logger = logging.getLogger(__name__)
 
 
 def read_json_file(file_path: str) -> List[Dict[str, Any]]:
+    """
+    Read a JSON file and return data.
+
+    Args:
+        file_path (str): The path to the JSON file.
+
+    Returns:
+        List[Dict[str, Any]]: A list of data from the file or an empty list if the file is not valid.
+    """
+
     try:
         with open(file_path, "r", encoding="utf-8") as file:
             logger.debug(f"Чтение JSON файла: {file_path}")
@@ -47,7 +57,19 @@ def read_json_file(file_path: str) -> List[Dict[str, Any]]:
 
 
 def convert_currency(amount: float, from_currency: str) -> float:
-    """Конвертирует указанную сумму из одной валюты в рубли"""
+    """
+    Convert an amount from one currency to RUB.
+
+    Args:
+        amount (float): The amount to convert.
+        from_currency (str): The currency to convert from.
+
+    Returns:
+        float: The amount converted to RUB.
+
+    Raises:
+        ValueError: If the API request fails.
+    """
     utils_logger.debug(f"Конвертация валюты: {amount} {from_currency} -> RUB")  # Логгирование начала
     if from_currency == "RUB":
         utils_logger.debug(f"Валюта уже в рублях: {amount}")
@@ -73,7 +95,18 @@ def convert_currency(amount: float, from_currency: str) -> float:
 
 
 def transaction_amount_in_rub(transaction: dict) -> float:
-    """Конвертирует сумму транзакции в рубли"""
+    """
+    Convert the transaction amount to RUB.
+
+    Args:
+        transaction (dict): A transaction with an amount and currency.
+
+    Returns:
+        float: The transaction amount in RUB.
+
+    Raises:
+        ValueError: If transaction data is incomplete or invalid.
+    """
     utils_logger.debug(f"Конвертация суммы транзакции в рубли: {transaction}")  # Логгирование начала
     amount = float(transaction.get("operationAmount", {}).get("amount", 0))
     currency = transaction.get("operationAmount", {}).get("currency", {}).get("code")
